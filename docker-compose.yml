@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:5.7
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: mysql5.7-db
+    # extra_hosts:
+      # - "host.docker.internal:host-gateway"
+    environment:
+      # MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: ${DB_BASE}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+    ports:
+      - ${DB_PORT}:3306
+    volumes:
+      - ./dbdata:/var/lib/mysql
+    # healthcheck:
+    #   test: out=$$(mysqladmin ping -h localhost -P 3306 -u root --password=$$(cat $${FILE__MYSQL_ROOT_PASSWORD}) 2>&1); echo $$out | grep 'mysqld is alive' || { echo $$out; exit 1; }
+    # networks:
+    #   - app-network
+
+  app:
+    container_name: nestjs-graphql
+    build: ./
+    ports:
+      - ${PUBLIC_API_PORT}:${EXPRESS_PORT}
+    links:
+      - db
+    volumes:
+      - .:/usr/src/app
+
+    # networks:
+    #   - app-network
+    # network_mode: "host"
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
+
+volumes:
+  dbdata:
+
+# networks:
+#   app-network:
+#     name: nestjs
+
